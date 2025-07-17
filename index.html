@@ -77,7 +77,7 @@
 
     async function carregarItens() {
       try {
-        const res = await fetch(API_URL);
+        const res = await fetch(API_URL, { mode: 'cors' });
         const opcoesDisponiveis = await res.json();
 
         selectItem.innerHTML = '';

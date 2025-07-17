@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Confirme sua Presença</title>
   <style>
     * {
@@ -9,43 +9,38 @@
       padding: 0;
       box-sizing: border-box;
     }
-
     body {
       font-family: Arial, sans-serif;
-      background: #fff; /* Fundo branco */
+      background: #fff;
       text-align: center;
     }
-
     img.full-width {
       width: 100%;
-      height: auto; /* Mantém a proporção */
+      height: auto;
       display: block;
     }
-
     .conteudo {
       max-width: 600px;
       margin: 20px auto;
       padding: 20px;
     }
-
-    input, select, button {
+    input,
+    select,
+    button {
       width: 100%;
       padding: 10px;
       margin: 10px 0;
     }
-
     button {
       background: #28a745;
       color: white;
       border: none;
       cursor: pointer;
     }
-
     ul {
       list-style: none;
       padding: 0;
     }
-
     li {
       margin: 5px 0;
     }
@@ -53,17 +48,15 @@
 </head>
 <body>
   <!-- Primeira imagem -->
-  <img src="./arraia.jpeg" alt="Imagem 1" class="full-width">
-
+  <img src="./arraia.jpeg" alt="Imagem 1" class="full-width" />
   <!-- Segunda imagem -->
-  <img src="./Sem título.jpeg" alt="Imagem 2" class="full-width">
-
+  <img src="./Sem título.jpeg" alt="Imagem 2" class="full-width" />
   <!-- Conteúdo -->
   <div class="conteudo">
     <h1>🎉 Confirmação de Presença</h1>
     <p>Escolha o que você vai levar:</p>
     <form id="form">
-      <input type="text" id="nome" placeholder="Seu nome" required>
+      <input type="text" id="nome" placeholder="Seu nome" required />
       <select id="item" required>
         <option value="">Carregando itens...</option>
       </select>
@@ -76,93 +69,76 @@
   </div>
 
   <script>
-    const scriptURL = "https://59a1553a4c86.ngrok-free.app/confirmar";
-    const getURL = "https://59a1553a4c86.ngrok-free.app/confirmados";
-    const opcoesURL = "https://59a1553a4c86.ngrok-free.app/opcoes";
-    let confirmados = [];
-    let opcoes = [];
+    const API_URL = 'https://script.google.com/macros/s/AKfycbyWgCATGY9Dko72M6Vc7QSerefr8sXlvIkz1vf_O1d887GtAnOXmyp03HNFFGnuMDb0/exec';
 
-    const headers = {
-      'Content-Type': 'application/json',
-      'ngrok-skip-browser-warning': 'true'
-    };
+    const selectItem = document.getElementById('item');
+    const form = document.getElementById('form');
+    const mensagem = document.getElementById('mensagem');
 
-    async function carregarOpcoes() {
+    async function carregarItens() {
       try {
-        const res = await fetch(opcoesURL, { headers });
-        opcoes = await res.json();
-        atualizarSelect();
+        const res = await fetch(API_URL);
+        const opcoesDisponiveis = await res.json();
+
+        selectItem.innerHTML = '';
+
+        if (opcoesDisponiveis.length === 0) {
+          const option = document.createElement('option');
+          option.value = '';
+          option.textContent = 'Nenhum item disponível';
+          selectItem.appendChild(option);
+          selectItem.disabled = true;
+        } else {
+          opcoesDisponiveis.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item;
+            option.textContent = item;
+            selectItem.appendChild(option);
+          });
+          selectItem.disabled = false;
+        }
       } catch (error) {
-        console.error("❌ Erro ao buscar opções:", error);
+        mensagem.textContent = 'Erro ao carregar itens.';
+        selectItem.innerHTML = '';
+        selectItem.disabled = true;
       }
     }
 
-    async function carregarConfirmados() {
-      try {
-        const res = await fetch(getURL, { headers });
-        const data = await res.json();
-        confirmados = data;
-        atualizarLista();
-      } catch (error) {
-        console.error("❌ Erro ao buscar confirmados:", error);
-      }
-    }
-
-    function atualizarLista() {
-      const ul = document.getElementById("lista-confirmados");
-      ul.innerHTML = "";
-      confirmados.forEach(p => {
-        const comida = p.comida ? `🍽️ ${p.comida}` : "";
-        const li = document.createElement("li");
-        li.textContent = `${p.nome} — ${comida}`;
-        ul.appendChild(li);
-      });
-    }
-
-    function atualizarSelect() {
-      const select = document.getElementById("item");
-      select.innerHTML = '<option value="">Selecione um item</option>';
-      opcoes.forEach(op => {
-        const option = document.createElement("option");
-        option.value = op.id;
-        option.textContent = `${op.descricao} (${op.tipo})`;
-        select.appendChild(option);
-      });
-
-      if (select.options.length === 1) {
-        select.innerHTML = '<option value="">Todos os itens foram escolhidos</option>';
-        select.disabled = true;
-      } else {
-        select.disabled = false;
-      }
-    }
-
-    document.getElementById('form').addEventListener('submit', async (e) => {
+    form.addEventListener('submit', async e => {
       e.preventDefault();
+
       const nome = document.getElementById('nome').value.trim();
-      const itemId = document.getElementById('item').value;
-      if (!nome || !itemId) return;
+      const item = selectItem.value;
+
+      if (!nome || !item) {
+        alert('Preencha nome e escolha um item!');
+        return;
+      }
 
       try {
-        const res = await fetch(scriptURL, {
+        const response = await fetch(API_URL, {
           method: 'POST',
-          headers,
-          body: JSON.stringify({ nome, itemId })
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nome, item }),
         });
 
-        const texto = await res.text();
-        document.getElementById('mensagem').innerText = texto;
+        const data = await response.json();
 
-        document.getElementById('form').reset();
-        await carregarConfirmados();
-        await carregarOpcoes();
+        if (data.status === 'ok') {
+          alert('Presença confirmada!');
+          form.reset();
+          carregarItens();
+          mensagem.textContent = '';
+        } else {
+          alert('Erro: ' + (data.message || 'Tente novamente.'));
+        }
       } catch (error) {
-        document.getElementById('mensagem').innerText = "Erro ao confirmar presença.";
+        alert('Erro ao enviar os dados. Tente novamente.');
       }
     });
 
-    carregarConfirmados();
-    carregarOpcoes();
+    // Carrega as opções ao abrir a página
+    carregarItens();
   </script>
 </body>
 </html>

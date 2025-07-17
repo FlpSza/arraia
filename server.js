@@ -6,10 +6,11 @@ const PORT = process.env.PORT || 3000;
 
 // Configuração do banco MySQL
 const db = mysql.createConnection({
-  host: 'localhost',
+  host: 'yamabiko.proxy.rlwy.net',
+  port: 44190,
   user: 'root',
-  password: '123456',
-  database: 'arraia'
+  password: 'QSEdESUHBlkZjHklLQjkFGROinEbsXRW',
+  database: 'railway'
 });
 
 app.use(express.json());

@@ -29,39 +29,33 @@ app.use((req, res, next) => {
 
 // 🔍 Buscar confirmados
 app.get('/confirmados', (req, res) => {
-  db.query('SELECT nome, presente FROM convidados', (err, results) => {
+  db.query('SELECT nome FROM convidados', (err, results) => {
     if (err) return res.status(500).json({ erro: err.message });
     res.json(results);
   });
 });
 
 // 🔍 Buscar todos os presentes disponíveis (sem filtro)
-app.get('/opcoes', (req, res) => {
-  db.query('SELECT id, presente_nome FROM opcoes', (err, results) => {
-    if (err) return res.status(500).json({ erro: err.message });
-    res.json(results);
-  });
-});
+//app.get('/opcoes', (req, res) => {
+//  db.query('SELECT id, presente_nome FROM opcoes', (err, results) => {
+//    if (err) return res.status(500).json({ erro: err.message });
+//    res.json(results);
+//  });
+//});
 
 // ✅ Registrar confirmação (sem marcar presente como indisponível)
 app.post('/confirmar', (req, res) => {
-  const { nome, itemId } = req.body;
-  if (!nome || !itemId) return res.status(400).send('Nome e item obrigatórios');
+  const { nome } = req.body;
+  if (!nome) return res.status(400).send('Nome obrigatório');
 
-  db.query('SELECT presente_nome FROM opcoes WHERE id = ?', [itemId], (err, results) => {
-    if (err) return res.status(500).send('Erro ao buscar presente');
-    if (results.length === 0) return res.status(400).send('Presente não encontrado');
-
-    const { presente_nome } = results[0];
-    db.query(
-      'INSERT INTO convidados (nome, presente) VALUES (?, ?)',
-      [nome, presente_nome],
-      (err) => {
-        if (err) return res.status(500).send('Erro ao registrar convidado');
-        res.send('🎉 Confirmação registrada com sucesso!');
-      }
-    );
-  });
+  db.query(
+    'INSERT INTO convidados (nome) VALUES (?)',
+    [nome],
+    (err) => {
+      if (err) return res.status(500).send('Erro ao registrar convidado');
+      res.send('🎉 Confirmação registrada com sucesso!');
+    }
+  );
 });
 
 app.listen(PORT, () => {

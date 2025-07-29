@@ -176,7 +176,7 @@
     opcoes.forEach(op => {
       const option = document.createElement("option");
       option.value = op.id;
-      option.textContent = `${op.descricao} (${op.tipo})`;
+      option.textContent = `${op.presente_nome}`;
       select.appendChild(option);
     });
 

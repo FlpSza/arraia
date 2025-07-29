@@ -58,6 +58,22 @@ app.post('/confirmar', (req, res) => {
   );
 });
 
+db.query('SELECT COUNT(*) AS total FROM convidados', (err, results) => {
+  if (err) {
+    console.error('❌ Erro ao contar convidados:', err.message);
+  } else {
+    console.log(`👥 Total de convidados confirmados: ${results[0].total}`);
+  }
+});
+
+app.get('/quantidade', (req, res) => {
+  db.query('SELECT COUNT(*) AS total FROM convidados', (err, results) => {
+    if (err) return res.status(500).json({ erro: err.message });
+    res.json({ confirmados: results[0].total });
+  });
+});
+
+
 app.listen(PORT, () => {
   console.log(`✅ Servidor rodando em http://localhost:${PORT}`);
 });

@@ -169,6 +169,17 @@
       }
     });
 
+      window.addEventListener('DOMContentLoaded', () => {
+    fetch('/quantidade')
+      .then(response => response.json())
+      .then(data => {
+        console.log(`🎉 Já temos ${data.confirmados} convidados confirmados!`);
+      })
+      .catch(error => {
+        console.error('❌ Erro ao buscar quantidade de confirmados:', error);
+      });
+    });
+
     carregarConfirmados();
   </script>
 </body>
